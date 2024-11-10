@@ -3,6 +3,7 @@ package game_test
 import (
 	"battleships/internal/game"
 	"fmt"
+	"math/rand/v2"
 	"testing"
 )
 
@@ -58,7 +59,7 @@ func CreateInitParamsMassive() *game.InitBoardParams {
 }
 
 func TestBoardStrike(t *testing.T) {
-	initParams := CreateInitParams()
+	initParams := CreateInitParams("TestUser")
 	fmt.Printf("%#v\n", *initParams)
 	playerBoard, err := game.NewPlayerBoard(initParams)
 	if err != nil {
@@ -105,7 +106,7 @@ func TestBoardStrike(t *testing.T) {
 // │ J │    │    │    │    │    │   │    │   │   │    │
 //
 // └───┴────┴────┴────┴────┴────┴───┴────┴───┴───┴────┘
-func CreateInitParams() *game.InitBoardParams {
+func CreateInitParams(id string) *game.InitBoardParams {
 	ships := make([]game.Ship, 0, 15)
 	ships = append(ships, game.Ship{Size: 5, Horizontal: true, X: 0, Y: 0})
 	ships = append(ships, game.Ship{Size: 4, Horizontal: true, X: 1, Y: 3})
@@ -113,6 +114,29 @@ func CreateInitParams() *game.InitBoardParams {
 	ships = append(ships, game.Ship{Size: 3, Horizontal: false, X: 6, Y: 0})
 	ships = append(ships, game.Ship{Size: 2, Horizontal: false, X: 1, Y: 7})
 	return &game.InitBoardParams{
-		Ships: ships,
+		PlayerId: id,
+		Ships:    ships,
 	}
+}
+
+func TestSimulate(t *testing.T) {
+	initA := CreateInitParams("playerA")
+	initB := CreateInitParams("playerB")
+	pA, _ := game.NewPlayerBoard(initA)
+	pB, _ := game.NewPlayerBoard(initB)
+	currentGame := game.NewGame(pA, pB)
+	currentGame.PlayerA.PrintBoard()
+	fmt.Println()
+	currentGame.PlayerB.PrintBoard()
+	for !currentGame.IsOver {
+		currentGame.Turn(randomCord(), randomCord())
+	}
+	fmt.Printf("Player %s won\n", currentGame.Winner)
+	currentGame.PlayerA.PrintBoard()
+	fmt.Println()
+	currentGame.PlayerB.PrintBoard()
+}
+
+func randomCord() uint8 {
+	return uint8(rand.IntN(10))
 }
